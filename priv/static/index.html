@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Typing Practice</title>
+  <style>
+    body {
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #text-container {
+      position: relative;
+      white-space: pre-wrap;
+      background: #1e1e1e;
+      color: #777;
+      padding: 20px;
+      border-radius: 8px;
+      flex-grow: 1;
+      overflow: auto;
+      line-height: 1.5em;
+      margin: 10px;
+      user-select: text; /* Permitir selección de texto */
+    }
+
+    /* Estilo para asegurar que todas las líneas tengan altura, incluso las vacías */
+    #text-container > div {
+      min-height: 1.5em;
+      position: relative;
+      border-left: 3px solid transparent;
+    }
+
+    /* Estilo para líneas vacías */
+    #text-container > div.empty-line {
+      border-left: 3px solid #333;
+    }
+
+    #file-uploader {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      border-top: 1px solid #ddd;
+      padding: 8px;
+      height: 30px;
+      position: relative;
+      z-index: 200;
+    }
+
+    #file-uploader label {
+      display: inline-flex;
+      align-items: center;
+      background: #4a90e2;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-right: 10px;
+      transition: background 0.2s;
+    }
+
+    #file-uploader label:hover {
+      background: #3a80d2;
+    }
+
+    #file-uploader input[type="file"] {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      position: absolute;
+      z-index: -1;
+    }
+
+    .typed {
+      color: lightgreen;
+    }
+
+    .highlight {
+      background: #333;
+      color: white;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+    .extra-chars {
+      color: #1e1e1e; /* Mismo color que el fondo */
+      background-color: #333; /* Para hacerlos ligeramente visibles */
+    }
+
+    #debug-info {
+      position: fixed;
+      bottom: 50px;
+      right: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      max-width: 300px;
+      z-index: 1000;
+    }
+
+    #file-name {
+      font-size: 12px;
+      color: #555;
+    }
+
+    /* Estilo para el botón de modo selección */
+    #selection-mode {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      z-index: 150;
+    }
+
+    #selection-mode:hover {
+      background: #3a80d2;
+    }
+
+    /* Clase para cuando el modo selección está activo */
+    .selection-active #key-catcher {
+      display: none;
+    }
+
+    /* Estilo para el indicador de línea vacía */
+    .empty-line-indicator {
+      color: #444;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    /* Estilo para espacios en blanco visibles */
+    .whitespace {
+      opacity: 0.3;
+      position: relative;
+    }
+
+    /* Punto para espacios */
+    .whitespace::after {
+      content: "·";
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="text-container"></div>
+
+<!-- Botón para activar/desactivar el modo selección -->
+<button id="selection-mode">Modo Selección</button>
+
+<!-- Elemento invisible que captura todas las pulsaciones de teclas -->
+<div id="key-catcher" tabindex="0" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 46px); opacity: 0; z-index: 100;"></div>
+
+<!-- Información de depuración -->
+<div id="debug-info"></div>
+
+<!-- Área de carga de archivos en la parte inferior -->
+<div id="file-uploader">
+  <label for="fileInput">Cargar archivo</label>
+  <input type="file" id="fileInput" accept=".*">
+  <span id="file-name">Ningún archivo seleccionado</span>
+</div>
+
+<script>
+let lines = [];
+let lineIndex = 0;
+let charIndex = 0;
+let errorActive = false;
+let extraChars = []; // Array para almacenar caracteres adicionales después del error
+let debugMode = true; // Activar/desactivar modo de depuración
+let selectionMode = false; // Modo de selección desactivado por defecto
+
+const textContainer = document.getElementById('text-container');
+const keyCatcher = document.getElementById('key-catcher');
+const debugInfo = document.getElementById('debug-info');
+const fileName = document.getElementById('file-name');
+const fileInput = document.getElementById('fileInput');
+const fileUploader = document.getElementById('file-uploader');
+const selectionModeBtn = document.getElementById('selection-mode');
+
+// Función para encontrar el índice del primer carácter no blanco en una línea
+function findFirstNonWhitespace(line) {
+  if (!line) return 0;
+
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] !== ' ' && line[i] !== '\t') {
+      return i;
+    }
+  }
+
+  // Si toda la línea son espacios en blanco, devolver el final de la línea
+  return line.length;
+}
+
+// Función para mostrar información de depuración
+function updateDebugInfo(expectedChar, inputChar) {
+  if (!debugMode) {
+    debugInfo.style.display = 'none';
+    return;
+  }
+
+  const currentLine = lines[lineIndex] || '';
+  const firstNonWhite = findFirstNonWhitespace(currentLine);
+
+  debugInfo.style.display = 'block';
+  debugInfo.innerHTML = `
+    <strong>Depuración:</strong><br>
+    Carácter esperado: "${expectedChar}" (código: ${expectedChar ? expectedChar.charCodeAt(0) : 'none'})<br>
+    Carácter ingresado: "${inputChar}" (código: ${inputChar ? inputChar.charCodeAt(0) : 'none'})<br>
+    Error activo: ${errorActive}<br>
+    Caracteres extra: ${extraChars.length}<br>
+    Posición: Línea ${lineIndex+1}, Carácter ${charIndex+1}<br>
+    Longitud línea actual: ${currentLine.length}<br>
+    Primer no-blanco: ${firstNonWhite}<br>
+    Total líneas: ${lines.length}
+  `;
+}
+
+function renderText() {
+  textContainer.innerHTML = '';
+
+  lines.forEach((line, lIndex) => {
+    const div = document.createElement('div');
+    const lineChars = [...line]; // UTF-8 seguro
+
+    // Marcar líneas vacías
+    if (lineChars.length === 0) {
+      div.classList.add('empty-line');
+
+      // Añadir indicador visual para líneas vacías
+      const emptyIndicator = document.createElement('span');
+      emptyIndicator.textContent = '⏎ línea vacía';
+      emptyIndicator.classList.add('empty-line-indicator');
+
+      // Si estamos en esta línea vacía, resaltarla
+      if (lIndex === lineIndex) {
+        emptyIndicator.classList.add('highlight');
+      } else if (lIndex < lineIndex) {
+        emptyIndicator.classList.add('typed');
+      }
+
+      div.appendChild(emptyIndicator);
+    } else {
+      // Procesar líneas con contenido
+      for (let cIndex = 0; cIndex < lineChars.length; cIndex++) {
+        const span = document.createElement('span');
+        const char = lineChars[cIndex];
+
+        // Manejar espacios en blanco de forma especial
+        if (char === ' ' || char === '\t') {
+          span.classList.add('whitespace');
+        }
+
+        span.textContent = char;
+
+        if (lIndex < lineIndex || (lIndex === lineIndex && cIndex < charIndex)) {
+          span.classList.add('typed');
+        }
+        else if (lIndex === lineIndex && cIndex === charIndex) {
+          if (errorActive) {
+            span.classList.add('error');
+            div.appendChild(span);
+
+            // Añadir la flecha de error a la derecha
+            const marker = document.createElement('span');
+            marker.textContent = '←';
+            marker.classList.add('error');
+            div.appendChild(marker);
+
+            // Añadir caracteres adicionales después del error
+            if (extraChars.length > 0) {
+              extraChars.forEach(char => {
+                const extraSpan = document.createElement('span');
+                extraSpan.textContent = char;
+                extraSpan.classList.add('extra-chars');
+                div.appendChild(extraSpan);
+              });
+            }
+
+            continue;
+          } else {
+            span.classList.add('highlight');
+          }
+        }
+        div.appendChild(span);
+      }
+
+      // Si estamos en la línea actual y ya completamos todos los caracteres
+      if (lIndex === lineIndex && charIndex === lineChars.length) {
+        const endMarker = document.createElement('span');
+        endMarker.textContent = '¶'; // Símbolo para indicar fin de línea
+        endMarker.style.opacity = '0.3';
+        endMarker.classList.add('highlight');
+        div.appendChild(endMarker);
+      }
+    }
+
+    textContainer.appendChild(div);
+  });
+
+  // Asegurarse de que el carácter actual esté visible
+  const currentChar = document.querySelector('.highlight, .error');
+  if (currentChar) {
+    currentChar.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Mantener el foco en el capturador de teclas si no estamos en modo selección
+  if (!selectionMode) {
+    keyCatcher.focus();
+  }
+}
+
+// Usar keypress en lugar de keydown para mejor soporte de caracteres internacionales
+keyCatcher.addEventListener('keypress', function(e) {
+  e.preventDefault();
+
+  const inputChar = String.fromCharCode(e.charCode);
+  const expectedChar = lines[lineIndex]?.[charIndex] || '';
+
+  updateDebugInfo(expectedChar, inputChar);
+
+  if (errorActive) {
+    // Permitir seguir escribiendo después del error
+    extraChars.push(inputChar);
+    renderText();
+    return;
+  }
+
+  if (inputChar === expectedChar) {
+    charIndex++;
+  } else {
+    errorActive = true;
+    extraChars = []; // Inicializar el array de caracteres extra
+  }
+  renderText();
+});
+
+// Manejar teclas especiales con keydown
+keyCatcher.addEventListener('keydown', function(e) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+
+    if (errorActive) {
+      // Si hay error, Enter se considera como un carácter más
+      extraChars.push('↵');
+      renderText();
+      return;
+    }
+
+    // Verificar si estamos al final de la línea actual
+    const currentLineLength = lines[lineIndex]?.length || 0;
+    if (charIndex >= currentLineLength) {
+      lineIndex++;
+
+      // Si llegamos al final del texto, reiniciar
+      if (lineIndex >= lines.length) {
+        alert("¡Texto completado!");
+        lineIndex = 0;
+      }
+
+      // Posicionar en el primer carácter no blanco de la nueva línea
+      charIndex = findFirstNonWhitespace(lines[lineIndex]);
+
+      renderText();
+    }
+    return;
+  }
+
+  if (e.key === "Backspace") {
+    e.preventDefault();
+
+    if (errorActive) {
+      if (extraChars.length > 0) {
+        // Primero borrar los caracteres adicionales
+        extraChars.pop();
+      } else {
+        // Cuando ya no hay caracteres adicionales, desactivar el error
+        errorActive = false;
+      }
+    }
+    else if (charIndex > 0) {
+      charIndex--;
+    }
+    renderText();
+  }
+});
+
+// Botón para activar/desactivar el modo selección
+selectionModeBtn.addEventListener('click', function() {
+  selectionMode = !selectionMode;
+  if (selectionMode) {
+    document.body.classList.add('selection-active');
+    selectionModeBtn.textContent = 'Modo Escritura';
+    keyCatcher.style.display = 'none';
+  } else {
+    document.body.classList.remove('selection-active');
+    selectionModeBtn.textContent = 'Modo Selección';
+    keyCatcher.style.display = 'block';
+    keyCatcher.focus();
+  }
+});
+
+// Asegurarse de que el foco vuelva al capturador de teclas cuando se hace clic en el área de texto
+textContainer.addEventListener('click', function(e) {
+  if (!selectionMode) {
+    // Solo capturar el foco si no estamos en modo selección
+    keyCatcher.focus();
+    e.preventDefault(); // Prevenir la selección de texto en modo escritura
+  }
+});
+
+// Evitar que el key-catcher capture eventos en el área de carga de archivos
+fileUploader.addEventListener('click', function(e) {
+  e.stopPropagation(); // Evitar que el evento llegue al document
+});
+
+document.getElementById('fileInput').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Actualizar el nombre del archivo
+  fileName.textContent = file.name;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    lines = e.target.result.split('\n');
+    lineIndex = 0;
+    // Posicionar en el primer carácter no blanco de la primera línea
+    charIndex = findFirstNonWhitespace(lines[0]);
+    errorActive = false;
+    extraChars = [];
+    renderText();
+
+    // Devolver el foco al key-catcher después de cargar el archivo
+    if (!selectionMode) {
+      setTimeout(() => keyCatcher.focus(), 100);
+    }
+  };
+  reader.readAsText(file);
+});
+
+// Inicializar con algunas líneas de ejemplo si no hay archivo cargado
+if (lines.length === 0) {
+  lines = [
+    "Este es un texto de ejemplo con acentos: á, é, í, ó, ú, ñ.",
+    "", // Línea vacía para probar
+    "    Esta línea tiene espacios al inicio.",
+    "Otra línea normal.",
+    "  • Línea con viñeta y espacios.",
+    "    // Comentario de código con indentación",
+    "", // Otra línea vacía
+    "Línea después de una línea vacía."
+  ];
+
+  // Posicionar en el primer carácter no blanco de la primera línea
+  lineIndex = 0;
+  charIndex = findFirstNonWhitespace(lines[0]);
+
+  renderText();
+
+  // Asegurarse de que el capturador de teclas tenga el foco al inicio
+  keyCatcher.focus();
+}
+</script>
+
+</body>
+</html>

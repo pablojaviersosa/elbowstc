@@ -1,0 +1,9 @@
+{application, my_typing_app,
+ [
+  {description, "Typing practice app like typing.io"},
+  {vsn, "0.1.0"},
+  {modules, [my_typing_app, code_provider]},
+  {registered, [my_typing_app]},
+  {applications, [kernel, stdlib, cowboy]}
+ ]}.
+
