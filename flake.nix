@@ -30,7 +30,8 @@
                     ];
 
 					 shellHook = ''
-					      rebar3 shell --apps my_typing_app
+					      rebar3 shell --apps elbowstc
+						  xdg-open "https://localhost:8080
 						'';
                 };
             }

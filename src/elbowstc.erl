@@ -1,4 +1,4 @@
--module(my_typing_app).
+-module(elbowstc).
 -behaviour(application).
 
 -export([start/2, stop/1]).
@@ -6,7 +6,7 @@
 start(_StartType, _StartArgs) ->
     Dispatch = cowboy_router:compile([
 									  {'_', [
-            {"/", cowboy_static, {priv_file, my_typing_app, "static/index.html"}},
+            {"/", cowboy_static, {priv_file, elbowstc, "static/index.html"}},
             {"/api/code", code_provider, []}
         ]}
     ]),
