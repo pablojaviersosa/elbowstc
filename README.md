@@ -9,14 +9,6 @@ Para ejecutar.
 
 ```bash
 nix develop .
-
-rebar3 shell --apps my_typing_app
-```
-
-```eshell
-# Una vez logueados en la shell
-
-my_typing_app:start(ok,ok).
 ```
 
 Open http://localhost:8080
