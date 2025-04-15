@@ -17,7 +17,8 @@ For a fast review of the html/javascript code:
 elbowstc uses [redbean](https://redbean.dev/).
 
 ```Bash
-./elbowstc -l 127.0.0.1 -p 8080
+sh run.sh
+# Ctr-D to quit
 ```
 
 >A redbean executable with the index.html inside ->
@@ -28,5 +29,5 @@ elbowstc uses [redbean](https://redbean.dev/).
 >./redbean-3.0.0.com
 >```
 
-In all cases open in your browser http://localhost:8080
+In all cases open http://127.0.0.1:8080
 
