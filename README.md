@@ -1,33 +1,34 @@
 # elbowstc
 
-## app de tipeo en erlang y javascript.
+## Offline typeio-like web app.
 
-Estuve usando algunas aplicaciones de typing y ninguna te deja de manera
-gratuita subir tus propios sources.
+I started this repo for learning purposes, because none of existing popular web
+apps brings the feature of load your own code to train. I mean, the code (or
+text/document) of your choice. So i chat with an ia an got a reasonbly functional
+peace of code.
 
-Para ejecutar.
+
+## Redbean based version.
+
+For a fast review of the html/javascript code:
+
+```Bash
+sh run.sh
+```
+Open http://127.0.0.1:8080
+
+In terminal: Ctr-D to quit.
+
+Look at this amazing project:
+[redbean](https://redbean.dev/).
+
+## For learning purposees
+
+For now, I'm going to leave this part as is, to keep together the motivations
+that led me to start the project, which were to start learning Nix and Erlang.
 
 ```bash
 nix develop .
 ```
 
-## Redbean version.
-For a fast review of the html/javascript code:
-
-elbowstc uses [redbean](https://redbean.dev/).
-
-```Bash
-sh run.sh
-# Ctr-D to quit
-```
-
->A redbean executable with the index.html inside ->
->```bash
-># Test your own html/javascripts files.
->zip -r redbean-3.0.0.com index.html
->chmod +x redbean-3.0.0.com
->./redbean-3.0.0.com
->```
-
-In all cases open http://127.0.0.1:8080
-
+Open http://127.0.0.1:8080

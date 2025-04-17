@@ -1,9 +1,10 @@
 {application, elbowstc,
  [
-  {description, "Typing practice app like typing.io"},
+  {description, "Offline typing practice app."},
   {vsn, "0.1.0"},
   {modules, [elbowstc, code_provider]},
   {registered, [elbowstc]},
+  {mod,	{elbowstc, []}},
   {applications, [kernel, stdlib, cowboy]}
  ]}.
 
