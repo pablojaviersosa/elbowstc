@@ -24,7 +24,6 @@
             {
                 devShells.default = pkgs.mkShell {
                     nativeBuildInputs = [
-                        pkgs.gleam
                         pkgs.erlang
 						pkgs.rebar3
                     ];
