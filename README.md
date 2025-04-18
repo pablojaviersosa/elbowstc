@@ -15,20 +15,11 @@ For a fast review of the html/javascript code:
 ```Bash
 sh run.sh
 ```
-Open http://127.0.0.1:8080
-
-In terminal: Ctr-D to quit.
-
-Look at this amazing project:
-[redbean](https://redbean.dev/).
-
-## For learning purposees
-
-For now, I'm going to leave this part as is, to keep together the motivations
-that led me to start the project, which were to start learning Nix and Erlang.
+## With python
 
 ```bash
-nix develop .
+python run.py
 ```
 
 Open http://127.0.0.1:8080
+
