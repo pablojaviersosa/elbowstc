@@ -2,7 +2,7 @@ import http.server
 import socketserver
 
 PORT = 8080
-DIRECTORY = "priv/static"
+DIRECTORY = "./"
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
