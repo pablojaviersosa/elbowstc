@@ -3,200 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Typing Practice Pro</title>
+  <title>Elbowstc - offline typing trainer web app.</title>
   <style>
-    body {
-      font-family: monospace;
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: #f5f5f5;
-      touch-action: manipulation;
-      overflow: hidden;
-    }
-
-    #text-container {
-      flex: 1;
-      padding: 20px;
-      overflow: hidden;
-      background: #1e1e1e;
-      color: #777;
-      white-space: pre-wrap;
-      line-height: 1.5em;
-    }
-
-    .line {
-      min-height: 1.5em;
-    }
-
-    .typed {
-      color: lightgreen;
-    }
-
-    .current-char {
-      background: #333;
-      color: white;
-    }
-
-    .error {
-      color: red;
-      text-decoration: underline;
-    }
-
-    .extra-chars {
-      color: darkred;
-    }
-
-    #controls {
-      padding: 5px;
-      background: #ddd;
-      display: flex;
-      align-items: center;
-      border-top: 1px solid #aaa;
-      height: 20px;
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    button {
-      padding: 3px 8px;
-      margin-right: 8px;
-      background: #4a90e2;
-      color: white;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    #hidden-input {
-      position: fixed;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #file-name {
-      font-size: 12px;
-      color: #555;
-      margin-left: 8px;
-      flex-grow: 1;
-    }
-
-    #stats-container {
-      display: flex;
-      justify-content: space-between;
-      padding: 5px 10px;
-      background: #eee;
-      border-bottom: 1px solid #ccc;
-      font-size: 12px;
-    }
-
-    .stat-group {
-      display: flex;
-      gap: 15px;
-    }
-
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .stat-label {
-      font-weight: bold;
-      color: #555;
-    }
-
-    .stat-value {
-      color: #333;
-      text-align: center;
-    }
-
-    #selection-mode-btn {
-      background: #e67e22;
-    }
-
-    .selection-mode #text-container {
-      user-select: text;
-    }
-
-    .selection-mode #hidden-input {
-      pointer-events: none;
-    }
-
-    .whitespace {
-      opacity: 0.5;
-      position: relative;
-    }
-
-    .whitespace::after {
-      content: "·";
-      position: absolute;
-      left: 0;
-    }
-
-    .tab-space::after {
-      content: "→";
-    }
+    body { font-family: monospace; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; background: #f5f5f5; touch-action: manipulation; overflow: hidden; }
+    #text-container { flex: 1; padding: 20px; overflow: hidden; background: #1e1e1e; color: #777; white-space: pre-wrap; line-height: 1.5em; }
+    .line { min-height: 1.5em; }
+    .typed { color: lightgreen; }
+    .current-char { background: #333; color: white; }
+    .error { color: red; text-decoration: underline; }
+    .extra-chars { color: darkred; }
+    #controls { padding: 5px; background: #ddd; display: flex; align-items: center; border-top: 1px solid #aaa; height: 20px; }
+    #file-input { display: none; }
+    button { padding: 3px 8px; margin-right: 8px; background: #4a90e2; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px; }
+    #hidden-input { position: fixed; opacity: 0; pointer-events: none; }
+    #file-name { font-size: 12px; color: #555; margin-left: 8px; flex-grow: 1; }
+    #stats-container { display: flex; justify-content: space-between; padding: 5px 10px; background: #eee; border-bottom: 1px solid #ccc; font-size: 12px; }
+    .stat-group { display: flex; gap: 15px; }
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-label { font-weight: bold; color: #555; }
+    .stat-value { color: #333; text-align: center; }
+    #selection-mode-btn { background: #e67e22; }
+    .selection-mode #text-container { user-select: text; }
+    .selection-mode #hidden-input { pointer-events: none; }
+    .whitespace { opacity: 0.5; position: relative; }
+    .whitespace::after { content: "·"; position: absolute; left: 0; }
+    .tab-space::after { content: "→"; }
   </style>
 </head>
 <body>
   <div id="stats-container">
     <div class="stat-group">
-      <div class="stat-item">
-        <span class="stat-label">PPM</span>
-        <span class="stat-value" id="ppm-stat">0</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Precisión</span>
-        <span class="stat-value" id="accuracy-stat">0%</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Fluidez</span>
-        <span class="stat-value" id="fluency-stat">0%</span>
-      </div>
+      <div class="stat-item"><span class="stat-label">PPM</span><span class="stat-value" id="ppm-stat">0</span></div>
+      <div class="stat-item"><span class="stat-label">Precisión</span><span class="stat-value" id="accuracy-stat">0%</span></div>
+      <div class="stat-item"><span class="stat-label">Fluency</span><span class="stat-value" id="fluency-stat">0%</span></div>
     </div>
-    <div class="stat-item">
-      <span class="stat-label">Tiempo</span>
-      <span class="stat-value" id="time-stat">00:00</span>
-    </div>
+    <div class="stat-item"><span class="stat-label">Time</span><span class="stat-value" id="time-stat">00:00</span></div>
   </div>
 
   <div id="text-container"></div>
 
   <div id="controls">
-    <button id="load-btn">Cargar archivo</button>
+    <button id="load-btn">Load file</button>
     <input type="file" id="file-input">
-    <span id="file-name">Ningún archivo seleccionado</span>
-    <button id="selection-mode-btn">Modo Selección</button>
+    <span id="file-name">Select a file</span>
+    <button id="selection-mode-btn">Selection mode</button>
   </div>
 
-  <input type="text" id="hidden-input" tabindex="-1">
+  <input type="text" id="hidden-input" tabindex="-1" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
 
 <script>
-// Variables de estado
-let allLines = [];
-let displayedLines = [];
-let currentLine = 0;
-let currentChar = 0;
-let hasError = false;
-let extraChars = [];
-const LINES_CHUNK = 40;
-let isComplete = false;
-let selectionMode = false;
-let typingStarted = false;
-
+// Estado
+let allLines = [], displayedLines = [], currentLine = 0, currentChar = 0, hasError = false, extraChars = [], isComplete = false, selectionMode = false, typingStarted = false;
+let composing = false;
 // Estadísticas
-let startTime = null;
-let totalChars = 0;
-let correctChars = 0;
-let errorCount = 0;
-let timerInterval = null;
+let startTime = null, totalChars = 0, correctChars = 0, errorCount = 0, timerInterval = null;
 
-// Elementos del DOM
+// DOM
 const textContainer = document.getElementById('text-container');
 const fileInput = document.getElementById('file-input');
 const loadBtn = document.getElementById('load-btn');
@@ -208,331 +70,92 @@ const accuracyStat = document.getElementById('accuracy-stat');
 const fluencyStat = document.getElementById('fluency-stat');
 const timeStat = document.getElementById('time-stat');
 
-// Función para encontrar el primer carácter no blanco
 function findFirstNonWhitespace(line) {
   if (!line) return 0;
-  for (let i = 0; i < line.length; i++) {
-    if (line[i] !== ' ' && line[i] !== '\t') {
-      return i;
-    }
-  }
+  for (let i = 0; i < line.length; i++) if (line[i] !== ' ' && line[i] !== '\t') return i;
   return line.length;
 }
 
-// Función para cargar el siguiente bloque de líneas
 function loadNextChunk() {
   const start = displayedLines.length;
-  const end = Math.min(start + LINES_CHUNK, allLines.length);
-
-  for (let i = start; i < end; i++) {
-    displayedLines.push(allLines[i]);
-  }
-
+  const end = Math.min(start + 40, allLines.length);
+  for (let i = start; i < end; i++) displayedLines.push(allLines[i]);
   render();
 }
 
-// Función para renderizar el texto con whitespace visible
 function render() {
   let html = '';
-
-  for (let i = 0; i < displayedLines.length; i++) {
-    const line = displayedLines[i];
+  displayedLines.forEach((line, i) => {
     html += '<div class="line">';
-
-    if (i < currentLine) {
-      // Líneas ya completadas
-      html += `<span class="typed">${renderWhitespace(line)}</span>`;
-    }
+    if (i < currentLine) html += `<span class="typed">${renderWhitespace(line)}</span>`;
     else if (i === currentLine) {
-      // Línea actual
       const before = line.substring(0, currentChar);
       const current = line[currentChar] || '';
       const after = line.substring(currentChar + 1);
-
       html += `<span class="typed">${renderWhitespace(before)}</span>`;
-
       if (hasError) {
         html += `<span class="error">${escapeHtml(current)}</span>`;
-        if (extraChars.length > 0) {
-          html += `<span class="extra-chars">${escapeHtml(extraChars.join(''))}</span>`;
-        }
-      } else {
-        html += `<span class="current-char">${escapeHtml(current)}</span>`;
-      }
-
+        if (extraChars.length) html += `<span class="extra-chars">${escapeHtml(extraChars.join(''))}</span>`;
+      } else html += `<span class="current-char">${escapeHtml(current)}</span>`;
       html += `<span>${renderWhitespace(after)}</span>`;
-    }
-    else {
-      // Líneas futuras
-      html += `<span>${renderWhitespace(line)}</span>`;
-    }
-
+    } else html += `<span>${renderWhitespace(line)}</span>`;
     html += '</div>';
-  }
-
+  });
   textContainer.innerHTML = html;
-
-  // Cargar más líneas si estamos cerca del final
-  if (currentLine > displayedLines.length - 20 && displayedLines.length < allLines.length) {
-    loadNextChunk();
-  }
-
-  // Hacer scroll a la posición actual
+  if (currentLine > displayedLines.length - 20 && displayedLines.length < allLines.length) loadNextChunk();
   const linesEls = textContainer.getElementsByClassName('line');
-  if (linesEls[currentLine]) {
-    linesEls[currentLine].scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  if (linesEls[currentLine]) linesEls[currentLine].scrollIntoView({behavior:'smooth',block:'center'});
 }
 
-// Función para renderizar whitespace visible
 function renderWhitespace(text) {
-  return escapeHtml(text)
-    .replace(/ /g, '<span class="whitespace"> </span>')
-    .replace(/\t/g, '<span class="whitespace tab-space">\t</span>');
+  return escapeHtml(text).replace(/ /g,'<span class="whitespace"> </span>').replace(/\t/g,'<span class="whitespace tab-space">\t</span>');
 }
 
-// Escapar HTML para seguridad
-function escapeHtml(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
+function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
 
-// Función para enfocar el input
-function focusInput() {
-  if (!selectionMode) {
-    hiddenInput.focus();
-    setTimeout(() => hiddenInput.value = '', 10);
-  }
-}
+function focusInput() { if (!selectionMode) { hiddenInput.focus(); setTimeout(()=>hiddenInput.value='',10); }}
+function startTimer() { if (timerInterval) clearInterval(timerInterval); startTime = new Date(); timerInterval = setInterval(updateTimer,1000); }
+function updateTimer() { if (!startTime) return; const now=new Date(), sec=Math.floor((now-startTime)/1000), m=Math.floor(sec/60), s=sec%60; timeStat.textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+function calculateFinalStats(){ if(!startTime)return; clearInterval(timerInterval); const end=new Date(), mins=(end-startTime)/60000, words=correctChars/5, ppm=Math.round(words/Math.max(mins,0.1)), acc=Math.round((correctChars/Math.max(totalChars,1))*100), flu=Math.round((1-(errorCount/Math.max(totalChars,1)))*100); ppmStat.textContent=ppm; accuracyStat.textContent=`${acc}%`; fluencyStat.textContent=`${flu}%`; }
+function completeExercise(){ isComplete=true; textContainer.style.overflow='auto'; calculateFinalStats(); alert('¡Texto completado!'); }
 
-// Función para iniciar el temporizador
-function startTimer() {
-  if (timerInterval) clearInterval(timerInterval);
-  startTime = new Date();
-  timerInterval = setInterval(updateTimer, 1000);
-}
-
-// Función para actualizar solo el temporizador
-function updateTimer() {
-  if (!startTime) return;
-
-  const now = new Date();
-  const elapsedSeconds = Math.floor((now - startTime) / 1000);
-  const minutes = Math.floor(elapsedSeconds / 60);
-  const seconds = elapsedSeconds % 60;
-  timeStat.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-}
-
-// Función para calcular estadísticas finales
-function calculateFinalStats() {
-  if (!startTime) return;
-
-  const endTime = new Date();
-  const elapsedMinutes = (endTime - startTime) / 1000 / 60;
-
-  // PPM (Palabras por minuto)
-  const words = correctChars / 5;
-  const ppm = Math.round(words / Math.max(elapsedMinutes, 0.1));
-  ppmStat.textContent = ppm;
-
-  // Precisión
-  const accuracy = Math.round((correctChars / Math.max(totalChars, 1)) * 100);
-  accuracyStat.textContent = `${accuracy}%`;
-
-  // Fluidez (menos errores = más fluido)
-  const fluency = Math.round((1 - (errorCount / Math.max(totalChars, 1))) * 100);
-  fluencyStat.textContent = `${fluency}%`;
-}
-
-// Función para completar el ejercicio
-function completeExercise() {
-  isComplete = true;
-  textContainer.style.overflow = 'auto';
-  clearInterval(timerInterval);
-  calculateFinalStats();
-  alert('¡Texto completado!');
-}
-
-// Evento para cargar archivo
-loadBtn.addEventListener('click', () => {
-  fileInput.value = '';
-  fileInput.click();
+loadBtn.addEventListener('click',()=>{fileInput.value='';fileInput.click();});
+fileInput.addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f)return; fileName.textContent=f.name; const r=new FileReader(); r.onload=ev=>{
+    allLines=ev.target.result.split('\n'); displayedLines=[]; currentLine=0; currentChar=findFirstNonWhitespace(allLines[0]); hasError=false; extraChars=[]; isComplete=false; typingStarted=false; totalChars=correctChars=errorCount=0; if(timerInterval)clearInterval(timerInterval); startTime=null; ppmStat.textContent='0'; accuracyStat.textContent='0%'; fluencyStat.textContent='0%'; timeStat.textContent='00:00'; loadNextChunk(); focusInput();
+  }; r.readAsText(f,'UTF-8');
 });
 
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+hiddenInput.addEventListener('compositionstart',()=>composing=true);
+hiddenInput.addEventListener('compositionend',e=>{composing=false; handleInput(e.data);});
+hiddenInput.addEventListener('input',e=>{ if(isComplete||selectionMode||composing) return; const ch=e.data||hiddenInput.value; hiddenInput.value=''; handleInput(ch); });
 
-  fileName.textContent = file.name;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    allLines = e.target.result.split('\n');
-    displayedLines = [];
-    currentLine = 0;
-    currentChar = findFirstNonWhitespace(allLines[0]);
-    hasError = false;
-    extraChars = [];
-    isComplete = false;
-    typingStarted = false;
-
-    // Reiniciar estadísticas
-    totalChars = 0;
-    correctChars = 0;
-    errorCount = 0;
-    if (timerInterval) clearInterval(timerInterval);
-    timerInterval = null;
-    startTime = null;
-
-    // Resetear displays
-    ppmStat.textContent = '0';
-    accuracyStat.textContent = '0%';
-    fluencyStat.textContent = '0%';
-    timeStat.textContent = '00:00';
-
-    // Cargar primer chunk
-    loadNextChunk();
-    focusInput();
-  };
-  reader.readAsText(file);
-});
-
-// Capturar entrada del teclado
-hiddenInput.addEventListener('input', (e) => {
-  if (isComplete || selectionMode) return;
-
-  const input = hiddenInput.value;
-  if (!input) return;
-
-  hiddenInput.value = '';
-
-  // Iniciar timer con el primer caracter
-  if (!typingStarted) {
-    typingStarted = true;
-    startTimer();
-  }
-
-  // Solo procesar si tenemos líneas cargadas
-  if (displayedLines.length === 0) return;
-
-  const expected = displayedLines[currentLine]?.[currentChar];
+function handleInput(inputChar){
+  if(!typingStarted){ typingStarted=true; startTimer(); }
+  if(!displayedLines.length) return;
+  const spans=textContainer.querySelectorAll('span');
+  const expected=displayedLines[currentLine][currentChar]||'';
   totalChars++;
-
-  if (hasError) {
-    extraChars.push(input);
-    errorCount++;
-    render();
-    return;
-  }
-
-  if (input === expected) {
-    correctChars++;
-    currentChar++;
-
-    // Verificar si llegamos al final de la línea
-    if (currentChar >= displayedLines[currentLine].length) {
-      // No avanzamos automáticamente, esperamos Enter
-      render();
-      return;
-    }
-
-    hasError = false;
-  } else {
-    hasError = true;
-    errorCount++;
-  }
-
+  const inN=inputChar.normalize('NFC'), expN=expected.normalize('NFC');
+  if(hasError){ extraChars.push(inputChar); errorCount++; render(); return; }
+  if(inN===expN){ correctChars++; currentChar++; if(currentChar>=displayedLines[currentLine].length){ render(); return; } hasError=false; }
+  else{ hasError=true; errorCount++; }
   render();
+}
+
+hiddenInput.addEventListener('keydown',e=>{
+  if(isComplete||selectionMode) return;
+  if(e.key==='Enter'){ e.preventDefault(); if(currentChar>=displayedLines[currentLine].length){ currentLine++; currentChar=findFirstNonWhitespace(displayedLines[currentLine]||''); if(currentLine>=displayedLines.length&&currentLine<allLines.length) loadNextChunk(); if(currentLine>=allLines.length){ completeExercise(); } hasError=false; extraChars=[]; render(); } else{ hasError=true; errorCount++; render(); } }
+  else if(e.key==='Backspace'){ e.preventDefault(); if(hasError){ if(extraChars.length>0){ extraChars.pop(); errorCount--; } else hasError=false; } else if(currentChar>0){ currentChar--; correctChars--; } render(); }
 });
 
-// Manejar teclas especiales (ENTER y BACKSPACE)
-hiddenInput.addEventListener('keydown', (e) => {
-  if (isComplete || selectionMode) return;
+selectionModeBtn.addEventListener('click',()=>{ selectionMode=!selectionMode; document.body.classList.toggle('selection-mode',selectionMode); selectionModeBtn.textContent=selectionMode?'Modo Escritura':'Modo Selección'; focusInput(); });
+textContainer.addEventListener('click',e=>{ if(e.target.tagName!=='BUTTON') focusInput(); });
 
-  if (e.key === 'Enter') {
-    e.preventDefault();
-
-    // Solo permitir Enter al final de la línea
-    if (currentChar >= displayedLines[currentLine].length) {
-      currentLine++;
-      currentChar = findFirstNonWhitespace(displayedLines[currentLine] || '');
-
-      if (currentLine >= displayedLines.length && currentLine < allLines.length) {
-        loadNextChunk();
-      }
-
-      if (currentLine >= allLines.length) {
-        completeExercise();
-      }
-
-      hasError = false;
-      extraChars = [];
-      render();
-    } else {
-      // Si no estamos al final de la línea, marcar como error
-      hasError = true;
-      errorCount++;
-      render();
-    }
-  }
-  else if (e.key === 'Backspace') {
-    e.preventDefault();
-
-    if (hasError) {
-      if (extraChars.length > 0) {
-        extraChars.pop();
-        errorCount--;
-      } else {
-        hasError = false;
-      }
-    } else if (currentChar > 0) {
-      currentChar--;
-      correctChars--;
-    }
-
-    render();
-  }
-});
-
-// Modo selección
-selectionModeBtn.addEventListener('click', () => {
-  selectionMode = !selectionMode;
-  document.body.classList.toggle('selection-mode', selectionMode);
-  selectionModeBtn.textContent = selectionMode ? 'Modo Escritura' : 'Modo Selección';
-  focusInput();
-});
-
-// Mantener el foco cuando se toca la pantalla
-textContainer.addEventListener('click', (e) => {
-  if (e.target.tagName !== 'BUTTON') {
-    focusInput();
-  }
-});
-
-// Texto de ejemplo inicial
-allLines = [
-  "Este es un texto de ejemplo para practicar mecanografía.",
-  "  Este texto tiene indentación para probar la función de saltar espacios.",
-  "",
-  "Instrucciones:",
-  "1. Escribe exactamente lo que ves en pantalla",
-  "2. Presiona Enter al final de cada línea",
-  "3. Los errores se marcarán en rojo",
-  "4. Usa Backspace para corregir errores",
-  "5. El modo selección permite copiar texto",
-  "",
-  "¡Buena práctica!"
-];
-
-// Cargar líneas iniciales
-loadNextChunk();
-
-// Enfocar automáticamente al cargar
-setTimeout(focusInput, 300);
+// Ejemplo inicial
+allLines=["á é í ó ú.","  Este texto tiene indentación para probar la función de saltar espacios.","","Instrucciones:","1. Escribe exactamente lo que ves en pantalla","2. Presiona Enter al final de cada línea","3. Los errores se marcarán en rojo","4. Usa Backspace para corregir errores","5. El modo selección permite copiar texto","","¡Buena práctica!"];
+loadNextChunk(); setTimeout(focusInput,300);
 </script>
 </body>
 </html>
+
